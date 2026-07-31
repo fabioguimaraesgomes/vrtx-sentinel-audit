@@ -1,6 +1,15 @@
 {
-  "branch": "feature/migracion-azure-copilot-security",
+  "generated_at_utc": "2026-07-31T23:04:20Z",
+  "branch": "security/hardening-final",
   "commits": [
+    {
+      "hash": "5b6dab7",
+      "message": "security: hardening final and automated checks"
+    },
+    {
+      "hash": "1322135",
+      "message": "Actualizar hashes en migration_report_azure"
+    },
     {
       "hash": "257b724",
       "message": "Agregar reporte final y contenido de PR de migracion"
@@ -17,68 +26,24 @@
       "src/functions/publish_event/__init__.py",
       "src/functions/copilot_adapter/__init__.py"
     ],
-    "clients": [
-      "src/clients/adx_client.py",
-      "src/clients/openai_client.py",
-      "src/clients/eventgrid_client.py"
+    "security_utils": [
+      "src/utils/security_headers.py",
+      "src/utils/rate_limiter.py",
+      "src/utils/idempotency.py"
     ],
-    "adapters": [
-      "src/adapters/risk_inference.py",
-      "src/adapters/copilot_extension_adapter.py"
-    ],
-    "kql": [
-      "kql/telemetry_window.kql",
-      "kql/anomaly_detection.kql",
-      "kql/suspicious_patterns.kql"
-    ],
-    "iac": [
-      "infra/bicep/main.bicep",
-      "infra/bicep/adx.bicep",
-      "infra/bicep/functions.bicep",
-      "infra/bicep/eventgrid.bicep",
-      "infra/bicep/keyvault.bicep"
-    ],
-    "pipelines": [
+    "workflows": [
+      "pipelines/.github/workflows/security-semgrep.yml",
+      "pipelines/.github/workflows/security-zap.yml",
       "pipelines/.github/workflows/azure-ci.yml",
       "pipelines/.github/workflows/azure-cd.yml"
-    ],
-    "docs": [
-      "docs/README_AZURE.md",
-      "docs/DEPLOY_GUIDE.md",
-      "docs/COPILOT_EXTENSION_GUIDE.md",
-      "docs/ARCHITECTURE_AZURE.txt",
-      "docs/CHANGELOG_AZURE.md"
     ]
   },
   "tests": {
     "status": "passed",
-    "framework": "pytest",
-    "summary": "4 passed",
-    "files": [
-      "tests/test_adx_client.py",
-      "tests/test_openai_client.py",
-      "tests/test_eventgrid_client.py",
-      "tests/test_copilot_adapter.py"
-    ]
+    "summary": "....                                                                     [100%]\n4 passed in 1.60s",
+    "report": "release/security-reports/pytest.txt"
   },
-  "deploy_scripts": [
-    "infra/scripts/validate.sh",
-    "infra/scripts/deploy.sh"
-  ],
-  "pr": {
-    "title": "Migración completa a Azure + Copilot Security (Autónoma)",
-    "status": "pending-manual-publish",
-    "reason": "No GitHub remote configured and gh CLI is not installed",
-    "body_file": "release/PR_AUTOMATICO_MIGRACION.md"
-  },
-  "security_validation": {
-    "executed_at_utc": "2026-07-31T18:10:00Z",
-    "reports_dir": "release/security-reports",
-    "pytest": {
-      "status": "passed",
-      "summary": "4 passed",
-      "report": "release/security-reports/pytest.txt"
-    },
+  "security": {
     "bandit": {
       "status": "passed",
       "findings": 0,
@@ -91,25 +56,43 @@
     },
     "semgrep": {
       "status": "blocked",
-      "reason": "No se logro completar instalacion en entorno local (dependencias pesadas/opentelemetry resolution) en tiempo operativo.",
+      "reason": "Instalacion local incompleta en host Windows (resolucion de dependencias semgrep). Se habilito workflow CI security-semgrep.yml.",
       "report": "release/security-reports/semgrep.json"
     },
     "zap": {
       "status": "blocked",
-      "reason": "No existe Docker ni zap-baseline.py en el host local.",
+      "reason": "Docker/ZAP no disponible en host local. Se habilito workflow CI security-zap.yml.",
       "report": "release/security-reports/zap_report.json"
-    },
-    "publish_gate": {
-      "critical_controls_passed": false,
-      "published": false,
-      "reason": "Controles criticos pendientes o bloqueados (semgrep/zap y hardening operativo pendiente)."
     }
   },
+  "staging": {
+    "iac_validate": {
+      "status": "blocked",
+      "reason": "AADSTS530035 security defaults blocked management scope token."
+    },
+    "function_publish": {
+      "status": "blocked",
+      "reason": "func publish could not connect to Azure session in current host context."
+    },
+    "smoke_test": {
+      "status_code": 500,
+      "report": "release/security-reports/smoke_copilot.json"
+    }
+  },
+  "publish": {
+    "critical_controls_passed": false,
+    "published": false,
+    "reason": "Critical controls not all green (Semgrep/ZAP blocked), remote origin missing, gh unavailable, and Azure management-scope access blocked.",
+    "git_remote": "missing origin",
+    "git_cli": "gh not installed",
+    "pr_status": "manual-required",
+    "pr_file": "release/PR_AUTOMATICO_MIGRACION.md"
+  },
   "next_steps": [
-    "Configure git remote and push branch",
-    "Create PR using release/PR_AUTOMATICO_MIGRACION.md",
-    "Deploy infra with infra/scripts/deploy.sh",
-    "Publish Function App using Azure Functions Core Tools",
-    "Configure Key Vault secrets in target environment"
+    "Configure git remote origin and push branch security/hardening-final.",
+    "Install or authenticate gh CLI, then create repository secrets for Azure deployment.",
+    "Run workflows security-semgrep.yml and security-zap.yml in GitHub Actions.",
+    "Complete Azure login with management scope and rerun IaC validate/create and function publish.",
+    "Only publish after Semgrep and ZAP reports are passed and smoke test returns 200."
   ]
 }

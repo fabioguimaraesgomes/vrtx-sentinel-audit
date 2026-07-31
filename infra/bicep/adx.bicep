@@ -9,6 +9,9 @@ param environment string
 @description('Prefix for all resource names')
 param namePrefix string
 
+@description('ADX SKU name')
+param adxSkuName string = 'Dev(No SLA)_Standard_D11_v2'
+
 var adxClusterName = '${namePrefix}-${environment}-adx'
 var adxDatabaseName = 'vrtxsentinel'
 
@@ -16,7 +19,7 @@ resource adxCluster 'Microsoft.Kusto/clusters@2024-04-13' = {
   name: adxClusterName
   location: location
   sku: {
-    name: 'Dev(No SLA)_Standard_D11_v2'
+    name: adxSkuName
     tier: 'Basic'
     capacity: 1
   }

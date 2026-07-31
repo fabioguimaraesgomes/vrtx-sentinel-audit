@@ -37,6 +37,7 @@ module adx './adx.bicep' = {
     location: location
     environment: environment
     namePrefix: namePrefix
+    adxSkuName: adxSkuName
   }
 }
 
