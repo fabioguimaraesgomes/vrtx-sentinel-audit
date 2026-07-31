@@ -16,6 +16,11 @@
     "KEYVAULT_OPENAI_KEY_SECRET_NAME": "openai-key",
     "JWT_AUDIENCE": "vrtx-sentinel-api",
     "JWT_ISSUER": "https://login.microsoftonline.com/<tenant-id>/v2.0",
-    "JWT_HS256_SECRET": "change-this-secret"
+    "JWT_HS256_SECRET": "change-this-secret",
+    "TEST_MODE_TOKEN": "set-temporary-test-token",
+    "CORS_ALLOWED_ORIGINS": "https://portal.azure.com,https://copilot.microsoft.com",
+    "SECURITY_CSP": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';",
+    "RATE_LIMIT_PER_MINUTE": "120",
+    "IDEMPOTENCY_TTL_SECONDS": "600"
   }
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import jwt
@@ -27,7 +28,8 @@ def validate_jwt_token(
     hs256_secret: str | None,
     allow_test_mode: bool = False,
 ) -> dict[str, Any]:
-    if allow_test_mode and token == "test-mode-token":
+    test_mode_token = os.getenv("TEST_MODE_TOKEN")
+    if allow_test_mode and test_mode_token and token == test_mode_token:
         return {"sub": "test-user", "scope": "test", "mode": "test"}
 
     if not hs256_secret:

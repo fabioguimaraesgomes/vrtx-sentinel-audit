@@ -71,6 +71,40 @@
     "reason": "No GitHub remote configured and gh CLI is not installed",
     "body_file": "release/PR_AUTOMATICO_MIGRACION.md"
   },
+  "security_validation": {
+    "executed_at_utc": "2026-07-31T18:10:00Z",
+    "reports_dir": "release/security-reports",
+    "pytest": {
+      "status": "passed",
+      "summary": "4 passed",
+      "report": "release/security-reports/pytest.txt"
+    },
+    "bandit": {
+      "status": "passed",
+      "findings": 0,
+      "report": "release/security-reports/bandit.json"
+    },
+    "pip_audit": {
+      "status": "passed",
+      "vulnerabilities": 0,
+      "report": "release/security-reports/pip-audit.json"
+    },
+    "semgrep": {
+      "status": "blocked",
+      "reason": "No se logro completar instalacion en entorno local (dependencias pesadas/opentelemetry resolution) en tiempo operativo.",
+      "report": "release/security-reports/semgrep.json"
+    },
+    "zap": {
+      "status": "blocked",
+      "reason": "No existe Docker ni zap-baseline.py en el host local.",
+      "report": "release/security-reports/zap_report.json"
+    },
+    "publish_gate": {
+      "critical_controls_passed": false,
+      "published": false,
+      "reason": "Controles criticos pendientes o bloqueados (semgrep/zap y hardening operativo pendiente)."
+    }
+  },
   "next_steps": [
     "Configure git remote and push branch",
     "Create PR using release/PR_AUTOMATICO_MIGRACION.md",

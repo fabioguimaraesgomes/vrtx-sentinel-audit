@@ -8,6 +8,8 @@ import azure.functions as func
 from src.clients.adx_client import ADXClient
 from src.utils.config import load_settings
 from src.utils.logging_utils import get_logger, log_with_context
+from src.utils.rate_limiter import allow_request, build_rate_limit_key
+from src.utils.security_headers import is_origin_allowed, secure_json_response, secure_text_response
 from src.utils.security import SecurityError, extract_bearer_token, validate_jwt_token
 
 logger = get_logger(__name__)
@@ -16,6 +18,14 @@ KQL_PATH = Path(__file__).resolve().parents[3] / "kql" / "telemetry_window.kql"
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     settings = load_settings()
+    origin = req.headers.get("Origin")
+
+    if not is_origin_allowed(origin, settings.cors_allowed_origins):
+        return secure_json_response({"error": "Origin not allowed"}, 403, settings.security_csp)
+
+    rate_key = build_rate_limit_key(req.headers.get("Authorization"), fallback=req.url)
+    if not allow_request(rate_key, settings.rate_limit_per_minute):
+        return secure_json_response({"error": "Rate limit exceeded"}, 429, settings.security_csp, origin=origin)
 
     try:
         token = extract_bearer_token(dict(req.headers))
@@ -27,7 +37,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
     except SecurityError as exc:
         log_with_context(logger, "Unauthorized access", error=str(exc))
-        return func.HttpResponse(str(exc), status_code=401)
+        return secure_text_response(str(exc), 401, settings.security_csp, origin=origin)
 
     body = req.get_json() if req.get_body() else {}
     window_minutes = int(body.get("window_minutes", 30))
@@ -39,12 +49,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         cluster_uri=settings.adx_cluster_uri,
         database=settings.adx_database,
         managed_identity_client_id=settings.adx_managed_identity_client_id,
-        keyvault_uri=settings.keyvault_uri,
-        app_id_secret_name=settings.keyvault_adx_app_id_secret_name,
-        app_key_secret_name=settings.keyvault_adx_app_key_secret_name,
     )
     rows = client.query(query)
 
     response = {"count": len(rows), "telemetry": rows}
     log_with_context(logger, "Telemetry extracted", count=len(rows))
-    return func.HttpResponse(json.dumps(response, ensure_ascii=True), status_code=200, mimetype="application/json")
+    return secure_json_response(response, 200, settings.security_csp, origin=origin)

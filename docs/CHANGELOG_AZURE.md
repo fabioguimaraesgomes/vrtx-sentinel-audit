@@ -10,3 +10,10 @@
 - Agregada infraestructura como codigo en Bicep.
 - Agregada cobertura inicial de tests unitarios.
 - Agregados pipelines CI/CD para GitHub Actions.
+
+## 2026-08-01
+- Hardening final aplicado en endpoints HTTP: cabeceras de seguridad, validacion de origen CORS y rate limiting.
+- Implementada idempotencia para `publish_event` con TTL configurable.
+- ADX client endurecido a autenticacion Managed Identity-only (sin fallback a Azure CLI).
+- Parametrizacion IaC para `CORS_ALLOWED_ORIGINS`, `SECURITY_CSP`, `RATE_LIMIT_PER_MINUTE` e `IDEMPOTENCY_TTL_SECONDS`.
+- Agregados workflows CI de contingencia para Semgrep y ZAP: `security-semgrep.yml` y `security-zap.yml`.

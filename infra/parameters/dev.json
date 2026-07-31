@@ -1,0 +1,27 @@
+﻿{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion":  "1.0.0.0",
+    "parameters":  {
+                       "location":  {
+                                        "value":  "eastus2"
+                                    },
+                       "environment":  {
+                                           "value":  "stg"
+                                       },
+                       "namePrefix":  {
+                                          "value":  "vrtx"
+                                      },
+                       "keyVaultAdminObjectId":  {
+                                                     "value":  "5da2a032-8fd2-4fd3-8f3d-b82be1166745"
+                                                 },
+                       "openAiEndpoint":  {
+                                              "value":  "https://example.openai.azure.com"
+                                          },
+                       "corsAllowedOrigins": {
+                           "value": [
+                               "https://portal.azure.com",
+                               "https://copilot.microsoft.com"
+                           ]
+                                          }
+                   }
+}

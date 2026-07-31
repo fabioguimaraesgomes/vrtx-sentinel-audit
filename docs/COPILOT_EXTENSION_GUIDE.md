@@ -34,4 +34,4 @@ Transformar reportes VRTX-SENTINEL al contrato estructurado consumible por Copil
 ```
 
 ## Modo test
-Con `test_mode=true`, se habilita token de prueba `test-mode-token` para validaciones en QA.
+Con `test_mode=true`, se habilita el token de prueba configurado en la variable de entorno `TEST_MODE_TOKEN` para validaciones en QA.

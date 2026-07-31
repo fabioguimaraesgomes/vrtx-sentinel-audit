@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
 from azure.kusto.data import KustoClient, KustoConnectionStringBuilder
 
 from src.utils.logging_utils import get_logger, log_with_context
@@ -17,28 +15,15 @@ class ADXClient:
         cluster_uri: str,
         database: str,
         managed_identity_client_id: str | None = None,
-        keyvault_uri: str | None = None,
-        app_id_secret_name: str | None = None,
-        app_key_secret_name: str | None = None,
     ) -> None:
         self.database = database
         self.cluster_uri = cluster_uri
 
-        if keyvault_uri and app_id_secret_name and app_key_secret_name:
-            credential = DefaultAzureCredential(managed_identity_client_id=managed_identity_client_id)
-            secret_client = SecretClient(vault_url=keyvault_uri, credential=credential)
-            app_id = secret_client.get_secret(app_id_secret_name).value
-            app_key = secret_client.get_secret(app_key_secret_name).value
-            kcsb = KustoConnectionStringBuilder.with_aad_application_key_authentication(
-                connection_string=cluster_uri,
-                aad_app_id=app_id,
-                app_key=app_key,
-                authority_id="organizations",
-            )
-            auth_mode = "keyvault-app-key"
-        else:
-            kcsb = KustoConnectionStringBuilder.with_az_cli_authentication(cluster_uri)
-            auth_mode = "managed-identity-or-cli"
+        kcsb = KustoConnectionStringBuilder.with_aad_managed_service_identity_authentication(
+            cluster_uri,
+            client_id=managed_identity_client_id,
+        )
+        auth_mode = "managed-identity"
 
         self.client = KustoClient(kcsb)
         log_with_context(logger, "ADX client initialized", cluster_uri=cluster_uri, auth_mode=auth_mode)

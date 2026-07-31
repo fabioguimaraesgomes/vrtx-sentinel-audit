@@ -1,0 +1,5 @@
+bandit: status=passed findings=0 loc=744
+pip-audit: status=passed vulnerabilities=0
+semgrep: status=blocked reason=Instalacion local incompleta en host Windows (resolucion de dependencias semgrep). Se habilito workflow CI security-semgrep.yml.
+zap_report: status=blocked reason=Docker/ZAP no disponible en host local. Se habilito workflow CI security-zap.yml.
+pytest: ﻿....                                                                     [100%] | 4 passed in 1.60s

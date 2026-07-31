@@ -19,6 +19,9 @@ param adxSkuName string = 'Dev(No SLA)_Standard_D11_v2'
 @description('Azure OpenAI endpoint')
 param openAiEndpoint string
 
+@description('Allowed CORS origins for API access')
+param corsAllowedOrigins array = []
+
 module keyvault './keyvault.bicep' = {
   params: {
     location: location
@@ -55,6 +58,7 @@ module functions './functions.bicep' = {
     adxClusterUri: adx.outputs.adxClusterUri
     adxDatabase: adx.outputs.adxDatabase
     openAiEndpoint: openAiEndpoint
+    corsAllowedOrigins: corsAllowedOrigins
   }
 }
 

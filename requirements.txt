@@ -4,8 +4,8 @@ azure-keyvault-secrets==4.10.0
 azure-kusto-data==5.0.5
 azure-eventgrid==4.22.0
 openai==1.99.5
-PyJWT==2.10.1
+PyJWT==2.13.0
 python-dateutil==2.9.0.post0
 httpx==0.28.1
-pytest==8.4.1
+pytest==9.0.3
 pytest-mock==3.14.1

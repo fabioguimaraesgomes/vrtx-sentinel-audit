@@ -1,0 +1,12 @@
+{
+  "tool": "owasp-zap",
+  "status": "blocked",
+  "executed_at_utc": "2026-07-31T22:50:07Z",
+  "reason": "Docker/ZAP no disponible en host local. Se habilito workflow CI security-zap.yml.",
+  "target": "https://vrtx-stg-func.azurewebsites.net",
+  "findings": null,
+  "notes": [
+    "Fallback habilitado por CI en pipelines/.github/workflows/security-zap.yml",
+    "Publicacion bloqueada hasta reporte ZAP CI con High/Critical = 0"
+  ]
+}

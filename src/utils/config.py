@@ -2,6 +2,12 @@ import os
 from dataclasses import dataclass
 
 
+def _split_csv(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 @dataclass(frozen=True)
 class Settings:
     adx_cluster_uri: str
@@ -19,6 +25,10 @@ class Settings:
     jwt_audience: str
     jwt_issuer: str
     jwt_hs256_secret: str | None
+    cors_allowed_origins: list[str]
+    security_csp: str
+    rate_limit_per_minute: int
+    idempotency_ttl_seconds: int
 
 
 def load_settings() -> Settings:
@@ -38,4 +48,11 @@ def load_settings() -> Settings:
         jwt_audience=os.getenv("JWT_AUDIENCE", "vrtx-sentinel-api"),
         jwt_issuer=os.getenv("JWT_ISSUER", "https://login.microsoftonline.com/common/v2.0"),
         jwt_hs256_secret=os.getenv("JWT_HS256_SECRET"),
+        cors_allowed_origins=_split_csv(os.getenv("CORS_ALLOWED_ORIGINS")),
+        security_csp=os.getenv(
+            "SECURITY_CSP",
+            "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';",
+        ),
+        rate_limit_per_minute=int(os.getenv("RATE_LIMIT_PER_MINUTE", "120")),
+        idempotency_ttl_seconds=int(os.getenv("IDEMPOTENCY_TTL_SECONDS", "600")),
     )

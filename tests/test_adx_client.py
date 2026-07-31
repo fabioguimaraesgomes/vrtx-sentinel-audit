@@ -31,8 +31,8 @@ class FakeKustoClient:
 def test_adx_query_returns_rows(monkeypatch):
     monkeypatch.setattr("src.clients.adx_client.KustoClient", FakeKustoClient)
     monkeypatch.setattr(
-        "src.clients.adx_client.KustoConnectionStringBuilder.with_az_cli_authentication",
-        lambda _uri: object(),
+        "src.clients.adx_client.KustoConnectionStringBuilder.with_aad_managed_service_identity_authentication",
+        lambda _uri, **_kwargs: object(),
     )
 
     client = ADXClient(cluster_uri="https://cluster.kusto.windows.net", database="db")

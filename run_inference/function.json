@@ -3,12 +3,12 @@
   "entryPoint": "main",
   "bindings": [
     {
-      "authLevel": "function",
+      "authLevel": "anonymous",
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "copilot_adapter"
+      "route": "run-inference"
     },
     {
       "type": "http",
