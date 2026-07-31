@@ -2,6 +2,10 @@
   "branch": "feature/migracion-azure-copilot-security",
   "commits": [
     {
+      "hash": "257b724",
+      "message": "Agregar reporte final y contenido de PR de migracion"
+    },
+    {
       "hash": "75971c1",
       "message": "Migracion completa a Azure + Copilot Security"
     }
