@@ -1,0 +1,11 @@
+Telemetry
+| where Timestamp > ago(24h)
+| summarize avg_value=avg(MetricValue), std_value=stdev(MetricValue) by SignalName
+| join kind=inner (
+    Telemetry
+    | where Timestamp > ago(2h)
+) on SignalName
+| extend zscore = iff(std_value == 0, 0.0, (MetricValue - avg_value) / std_value)
+| where abs(zscore) >= 2.5
+| project Timestamp, DeviceId, UserId, SignalName, MetricValue, zscore
+| order by abs(zscore) desc

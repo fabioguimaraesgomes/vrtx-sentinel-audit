@@ -1,0 +1,25 @@
+{
+  "name": "VRTX Sentinel Copilot Security Adapter",
+  "version": "1.0.0",
+  "description": "Adapta reportes de riesgo VRTX-SENTINEL al formato esperado por Copilot Security.",
+  "endpoints": {
+    "riskAdapter": {
+      "method": "POST",
+      "path": "/api/copilot-adapter",
+      "auth": "Bearer JWT"
+    }
+  },
+  "capabilities": [
+    "metadata_mapping",
+    "risk_normalization",
+    "evidence_enrichment",
+    "actionable_steps_generation"
+  ],
+  "outputSchema": {
+    "metadata": "object",
+    "risk": "object",
+    "evidence": "array",
+    "recommendation": "string",
+    "actionable_steps": "array"
+  }
+}

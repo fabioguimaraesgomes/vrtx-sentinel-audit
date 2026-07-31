@@ -1,0 +1,24 @@
+VRTX-SENTINEL AZURE ARCHITECTURE
+================================
+
+[Telemetry Sources]
+        |
+        v
+[Azure Data Explorer (ADX)] --(KQL)--> [extract_telemetry Function]
+                                        |
+                                        v
+                                [run_inference Function]
+                                        |
+                    +-------------------+-------------------+
+                    |                                       |
+                    v                                       v
+          [publish_event Function]                 [copilot_adapter Function]
+                    |                                       |
+                    v                                       v
+             [Azure Event Grid]                    [Copilot Security Consumer]
+
+Cross-cutting concerns:
+- Managed Identity for service-to-service auth.
+- Azure Key Vault for secret retrieval.
+- JWT strict validation for API ingress.
+- Structured JSON logs for SIEM ingestion.

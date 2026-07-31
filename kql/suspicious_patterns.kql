@@ -1,0 +1,17 @@
+let failedAuth =
+Telemetry
+| where Timestamp > ago(12h)
+| where EventType == "failed_auth"
+| summarize failed_count=count() by SourceIP, UserId;
+
+let privilegeEscalation =
+Telemetry
+| where Timestamp > ago(12h)
+| where EventType in ("role_change", "permission_grant")
+| summarize escalation_count=count() by UserId, DeviceId;
+
+failedAuth
+| where failed_count >= 5
+| join kind=leftouter privilegeEscalation on UserId
+| project SourceIP, UserId, failed_count, escalation_count, DeviceId
+| order by failed_count desc

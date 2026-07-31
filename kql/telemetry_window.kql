@@ -1,0 +1,5 @@
+declare query_parameters(window_minutes:int = 30);
+Telemetry
+| where Timestamp > ago(window_minutes * 1m)
+| project Timestamp, DeviceId, UserId, EventType, MetricZScore, SourceIP, UnexpectedGeo, DeviceFingerprintMismatch
+| order by Timestamp desc
