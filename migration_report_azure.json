@@ -1,0 +1,77 @@
+{
+  "branch": "feature/migracion-azure-copilot-security",
+  "commits": [
+    {
+      "hash": "75971c1",
+      "message": "Migracion completa a Azure + Copilot Security"
+    }
+  ],
+  "artifacts": {
+    "functions": [
+      "src/functions/extract_telemetry/__init__.py",
+      "src/functions/run_inference/__init__.py",
+      "src/functions/publish_event/__init__.py",
+      "src/functions/copilot_adapter/__init__.py"
+    ],
+    "clients": [
+      "src/clients/adx_client.py",
+      "src/clients/openai_client.py",
+      "src/clients/eventgrid_client.py"
+    ],
+    "adapters": [
+      "src/adapters/risk_inference.py",
+      "src/adapters/copilot_extension_adapter.py"
+    ],
+    "kql": [
+      "kql/telemetry_window.kql",
+      "kql/anomaly_detection.kql",
+      "kql/suspicious_patterns.kql"
+    ],
+    "iac": [
+      "infra/bicep/main.bicep",
+      "infra/bicep/adx.bicep",
+      "infra/bicep/functions.bicep",
+      "infra/bicep/eventgrid.bicep",
+      "infra/bicep/keyvault.bicep"
+    ],
+    "pipelines": [
+      "pipelines/.github/workflows/azure-ci.yml",
+      "pipelines/.github/workflows/azure-cd.yml"
+    ],
+    "docs": [
+      "docs/README_AZURE.md",
+      "docs/DEPLOY_GUIDE.md",
+      "docs/COPILOT_EXTENSION_GUIDE.md",
+      "docs/ARCHITECTURE_AZURE.txt",
+      "docs/CHANGELOG_AZURE.md"
+    ]
+  },
+  "tests": {
+    "status": "passed",
+    "framework": "pytest",
+    "summary": "4 passed",
+    "files": [
+      "tests/test_adx_client.py",
+      "tests/test_openai_client.py",
+      "tests/test_eventgrid_client.py",
+      "tests/test_copilot_adapter.py"
+    ]
+  },
+  "deploy_scripts": [
+    "infra/scripts/validate.sh",
+    "infra/scripts/deploy.sh"
+  ],
+  "pr": {
+    "title": "Migración completa a Azure + Copilot Security (Autónoma)",
+    "status": "pending-manual-publish",
+    "reason": "No GitHub remote configured and gh CLI is not installed",
+    "body_file": "release/PR_AUTOMATICO_MIGRACION.md"
+  },
+  "next_steps": [
+    "Configure git remote and push branch",
+    "Create PR using release/PR_AUTOMATICO_MIGRACION.md",
+    "Deploy infra with infra/scripts/deploy.sh",
+    "Publish Function App using Azure Functions Core Tools",
+    "Configure Key Vault secrets in target environment"
+  ]
+}
