@@ -1,0 +1,14 @@
+﻿{
+    "IsEncrypted":  false,
+    "Values":  {
+                   "ENABLE_LLM":  "false",
+                   "ENABLE_DECEPTION":  "false",
+                   "AZURE_OPENAI_ENDPOINT":  "\u003cAZURE_OPENAI_ENDPOINT_PLACEHOLDER\u003e",
+                   "AZURE_OPENAI_KEY":  "\u003cKEY_IN_KEYVAULT_PLACEHOLDER\u003e",
+                   "FUNCTIONS_WORKER_RUNTIME":  "python",
+                   "ENABLE_SECURITY":  "true",
+                   "ADX_CLUSTER":  "\u003cADX_CLUSTER_PLACEHOLDER\u003e",
+                   "ADX_DATABASE":  "\u003cADX_DATABASE_PLACEHOLDER\u003e",
+                   "ENABLE_AUTOMATION":  "true"
+               }
+}

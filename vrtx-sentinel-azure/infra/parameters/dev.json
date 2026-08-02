@@ -1,0 +1,33 @@
+{
+  "appSettings": {
+    asume "Azure": {
+      "DataExplorer": {
+        "Cluster": "your-cluster-name",
+        "Database": "your-database-name"
+      },
+      "Functions": {
+        "FunctionAppName": "your-function-app-name"
+      },
+      "OpenAI": {
+        "ApiKey": "your-openai-api-key"
+      },
+      "EventGrid": {
+        "TopicEndpoint": "your-event-grid-topic-endpoint"
+      },
+      "KeyVault": {
+        "VaultName": "your-key-vault-name"
+      }
+    }
+  },
+  "connectionStrings": {
+    "DefaultConnection": "Server=tcp:your-server-name.database.windows.net,1433;Initial Catalog=your-database-name;Persist Security Info=False;User ID=your-username;Password=your-password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*"
+}

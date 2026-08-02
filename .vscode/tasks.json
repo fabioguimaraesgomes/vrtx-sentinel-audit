@@ -1,0 +1,17 @@
+﻿{
+    "version":  "2.0.0",
+    "tasks":  [
+                  {
+                      "label":  "Start VRTX Sentinel Local",
+                      "problemMatcher":  [
+
+                                         ],
+                      "command":  "powershell -ExecutionPolicy Bypass -File \"\\start-local.ps1\"",
+                      "presentation":  {
+                                           "panel":  "shared",
+                                           "reveal":  "always"
+                                       },
+                      "type":  "shell"
+                  }
+              ]
+}
