@@ -1,4 +1,4 @@
-﻿{
+{
     "version":  "2.0.0",
     "tasks":  [
                   {
@@ -12,6 +12,30 @@
                                            "reveal":  "always"
                                        },
                       "type":  "shell"
+                  },
+                  {
+                      "label":  "Build VRTX Dossier PDF",
+                      "type":  "shell",
+                      "command":  "powershell -ExecutionPolicy Bypass -Command \"& .\\.venv\\Scripts\\python.exe .\\scripts\\generate_dossier_pdf.py; Copy-Item .\\diagnostico_vrtx_sentinel_audit_v1.pdf .\\release\\diagnostico_vrtx_sentinel_audit_v1.pdf -Force; Compress-Archive -Path .\\release\\* -DestinationPath .\\release\\release_v1.0.0.zip -Force\"",
+                      "problemMatcher":  [
+
+                                         ],
+                      "presentation":  {
+                                           "reveal":  "always",
+                                           "panel":  "shared"
+                                       }
+                  },
+                  {
+                      "label":  "Build VRTX Access PDF",
+                      "type":  "shell",
+                      "command":  "powershell -ExecutionPolicy Bypass -Command \"& .\\.venv\\Scripts\\python.exe .\\scripts\\generate_access_pdf.py; Copy-Item .\\accesos_operativos_vrtx_v1.pdf .\\release\\accesos_operativos_vrtx_v1.pdf -Force; Compress-Archive -Path .\\release\\* -DestinationPath .\\release\\release_v1.0.0.zip -Force\"",
+                      "problemMatcher":  [
+
+                                         ],
+                      "presentation":  {
+                                           "reveal":  "always",
+                                           "panel":  "shared"
+                                       }
                   }
               ]
 }
