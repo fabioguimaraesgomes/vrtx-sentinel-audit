@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from datetime import date
 from pathlib import Path
 from reportlab.lib.pagesizes import A4
@@ -162,9 +163,14 @@ def render(md_path: Path, pdf_path: Path) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Genera PDF desde markdown de accesos")
+    parser.add_argument("--input", dest="input_path", default="accesos_operativos_vrtx_v1.md")
+    parser.add_argument("--output", dest="output_path", default="accesos_operativos_vrtx_v1.pdf")
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parents[1]
-    md = root / "accesos_operativos_vrtx_v1.md"
-    out = root / "accesos_operativos_vrtx_v1.pdf"
+    md = (root / args.input_path).resolve()
+    out = (root / args.output_path).resolve()
     render(md, out)
     print(f"PDF generado: {out}")
     return 0
