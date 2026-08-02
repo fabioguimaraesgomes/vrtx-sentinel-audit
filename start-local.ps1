@@ -12,5 +12,17 @@ if (Get-Command azurite -ErrorAction SilentlyContinue) {
 } else {
   Write-Output 'Azurite not found; skip. Use Azurite for Storage emulation if needed.'
 }
+
+# Resolve Functions project root automatically.
+$hostFile = Get-ChildItem -Path . -Recurse -File -Filter host.json -ErrorAction SilentlyContinue | Select-Object -First 1
+if (-not $hostFile) {
+  Write-Error 'No host.json found. Cannot start Azure Functions from this repository root.'
+  exit 1
+}
+
+$funcRoot = Split-Path -Parent $hostFile.FullName
+Set-Location $funcRoot
+Write-Output "Functions root detected: $funcRoot"
+
 # Start Functions Core Tools without extension bundles to avoid downloads
 func start --no-bundles
