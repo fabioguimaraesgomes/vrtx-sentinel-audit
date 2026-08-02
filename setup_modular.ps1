@@ -99,22 +99,24 @@ $openaiMock | Out-File -FilePath $openaiMockPath -Encoding utf8 -Force
 $adxMock | Out-File -FilePath $adxMockPath -Encoding utf8 -Force
 
 # 8) Create start-local.ps1 to activate venv, start Azurite (if present) and start Functions without bundles
-$startScript = @"
+$startScript = @'
 # start-local.ps1 - reproducible local startup
-Set-Location `"$PSScriptRoot`"
-# Activate venv if exists
+Set-Location "$PSScriptRoot"
+# Activate venv if exists (.venv preferred, fallback to .venv-1)
 if (Test-Path .\.venv\Scripts\Activate.ps1) {
-    & .\.venv\Scripts\Activate.ps1
+  & .\.venv\Scripts\Activate.ps1
+} elseif (Test-Path .\.venv-1\Scripts\Activate.ps1) {
+  & .\.venv-1\Scripts\Activate.ps1
 }
 # Start Azurite if installed locally (try to start if azurite command exists)
 if (Get-Command azurite -ErrorAction SilentlyContinue) {
-    Start-Process -NoNewWindow -FilePath azurite
+  Start-Process -NoNewWindow -FilePath azurite
 } else {
-    Write-Output 'Azurite not found; skip. Use Azurite for Storage emulation if needed.'
+  Write-Output 'Azurite not found; skip. Use Azurite for Storage emulation if needed.'
 }
 # Start Functions Core Tools without extension bundles to avoid downloads
 func start --no-bundles
-"@
+'@
 $startScriptPath = Join-Path $root "start-local.ps1"
 $startScript | Out-File -FilePath $startScriptPath -Encoding utf8 -Force
 
@@ -125,7 +127,7 @@ $tasksJson = @{
     @{
       label = "Start VRTX Sentinel Local"
       type = "shell"
-      command = "powershell -ExecutionPolicy Bypass -File `"$workspaceFolder\start-local.ps1`""
+      command = 'powershell -ExecutionPolicy Bypass -File "${workspaceFolder}\\start-local.ps1"'
       problemMatcher = @()
       presentation = @{
         reveal = "always"
@@ -171,6 +173,7 @@ $automationMd | Out-File -FilePath $automationMdPath -Encoding utf8 -Force
 
 # 11) Create a lightweight README update to document the immediate steps
 $readmeAdd = @"
+
 ## Quickstart local (generated)
 1. Copy `local.settings.json.example` to `local.settings.json` and fill placeholders using Key Vault references.
 2. Activate venv: `& .\.venv\Scripts\Activate.ps1`

@@ -16,7 +16,9 @@ Microservicio *serverless* diseñado bajo el paradigma **Zero-Trust**. Actúa co
 * **Automatización:** Google Cloud Scheduler (Cron Job)
 
 ## Doctrina Operativa
-Este sistema rechaza la fricción biológica. No hay intervención humana en el bucle de detección. Las credenciales se inyectan en tiempo de ejecución mediante Variables de Entorno. Cero confianza, orden absoluto.## Quickstart local (generated)
+Este sistema rechaza la fricción biológica. No hay intervención humana en el bucle de detección. Las credenciales se inyectan en tiempo de ejecución mediante Variables de Entorno. Cero confianza, orden absoluto.
+
+## Quickstart local (generated)
 1. Copy local.settings.json.example to local.settings.json and fill placeholders using Key Vault references.
 2. Activate venv: & .\.venv\Scripts\Activate.ps1
 3. Start local environment: .\start-local.ps1 (or use VS Code Task: Start VRTX Sentinel Local)

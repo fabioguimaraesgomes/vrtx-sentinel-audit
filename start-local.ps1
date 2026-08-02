@@ -1,8 +1,10 @@
 ﻿# start-local.ps1 - reproducible local startup
-Set-Location "C:\VRTX-SENTINEL Simulador"
-# Activate venv if exists
+Set-Location "$PSScriptRoot"
+# Activate venv if exists (.venv preferred, fallback to .venv-1)
 if (Test-Path .\.venv\Scripts\Activate.ps1) {
     & .\.venv\Scripts\Activate.ps1
+} elseif (Test-Path .\.venv-1\Scripts\Activate.ps1) {
+    & .\.venv-1\Scripts\Activate.ps1
 }
 # Start Azurite if installed locally (try to start if azurite command exists)
 if (Get-Command azurite -ErrorAction SilentlyContinue) {
