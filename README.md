@@ -23,3 +23,9 @@ Este sistema rechaza la fricción biológica. No hay intervención humana en el 
 2. Activate venv: & .\.venv\Scripts\Activate.ps1
 3. Start local environment: .\start-local.ps1 (or use VS Code Task: Start VRTX Sentinel Local)
 4. Use mocks in mocks/ to avoid external credits consumption. Set ENABLE_LLM=false for dev.
+
+## Quickstart local (generated)
+1. Copy local.settings.json.example to local.settings.json and fill placeholders using Key Vault references.
+2. Activate venv: & .\.venv\Scripts\Activate.ps1
+3. Start local environment: .\start-local.ps1 (or use VS Code Task: Start VRTX Sentinel Local)
+4. Use mocks in mocks/ to avoid external credits consumption. Set ENABLE_LLM=false for dev.
