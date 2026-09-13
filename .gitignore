@@ -1,4 +1,15 @@
 local.settings.json
+.env
 .venv/
+.azurite/
+*.pem
+credentials*.json
+oauth*.json
 __pycache__/
 *.pyc
+
+# large local artifacts
+release/*.zip
+release/*.bundle
+.venv-1/
+

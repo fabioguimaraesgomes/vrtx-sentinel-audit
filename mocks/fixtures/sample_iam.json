@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "iam",
+    "project": "gen-lang-client-0320924150",
+    "bindings": [
+      {
+        "role": "roles/owner",
+        "members": ["user:admin@example.com"]
+      },
+      {
+        "role": "roles/editor",
+        "members": ["user:dev@example.com"]
+      },
+      {
+        "role": "roles/iam.securityAdmin",
+        "members": ["user:sec@example.com"]
+      }
+    ]
+  },
+  {
+    "kind": "storage",
+    "bucket": "vrtx-public-assets",
+    "public": true,
+    "acl": ["allUsers"]
+  },
+  {
+    "kind": "vpc",
+    "instance": "web-1",
+    "external_ip": "203.0.113.10",
+    "internal_ip": "10.0.0.8"
+  }
+]
