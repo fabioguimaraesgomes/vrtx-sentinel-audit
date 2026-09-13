@@ -21,6 +21,11 @@ CSV/JSON  ->  ingest_file()  ->  Evidence[]
                  |                    |
                  v                    v
            run_checks()  ->  Finding[]  ->  score_findings()  ->  Score
+                                              |
+                                              v
+                                        draft_report()  ->  Report
+                                              |
+                          (opcional) xai_adapter.maybe_rewrite_summary
 ```
 
 1. `services/models.py` ? `AuditRequest`, `Evidence`, `Finding`, `Score`,
@@ -31,8 +36,29 @@ CSV/JSON  ->  ingest_file()  ->  Evidence[]
 3. `services/checks_basic.py` ? heuristicas deterministas:
    buckets publicos, `roles/owner`, roles primitivos, IPs externas.
    Si no hay senales, un Finding informativo de ingesta.
-4. `services/score.py` ? recuento ponderado
+4. `services/score.py` — recuento ponderado
    (critical=10, high=5, medium=2, low=1, info=0) y grado A-F.
+5. `services/checks_basic.py` — tambien regla opcional
+   `VRTX-AUTH-FAILED-BURST` si el payload parece logs de auth y
+   `failed_auth` >= 3 (severity medium/high). Sin Azure/ADX/OpenAI.
+6. `services/report.py` — `draft_report(findings, score, *, lang='es',
+   client_id=None) -> Report` determinista (titulo, score/grado,
+   findings, remediaciones por codigo). No requiere LLM.
+7. `services/xai_adapter.py` — opcional. Solo si `LLM_PROVIDER=xai` y
+   existe `XAI_API_KEY`: llama a grok-4.6 (`https://api.x.ai/v1`) para
+   reescribir **unicamente** el resumen ejecutivo. Nunca inventa
+   findings. Por defecto `LLM_PROVIDER=off` (o sin key) -> texto
+   determinista sin llamada externa.
+
+## draft_report / LLM_PROVIDER
+
+| Variable | Valores | Efecto |
+|----------|---------|--------|
+| `LLM_PROVIDER` | `off` (default), `xai` | `off` = solo borrador determinista; `xai` habilita pulido del summary |
+| `XAI_API_KEY` | secreto (no commitear) | Requerido junto a `LLM_PROVIDER=xai`; si falta, se omite el LLM |
+
+El smoke fija `LLM_PROVIDER=off` y exige score **27** sobre
+`mocks/fixtures/sample_iam.json`.
 
 ## Smoke
 
@@ -43,7 +69,9 @@ python scripts/smoke_ingest.py
 ```
 
 Crea `mocks/fixtures/sample_iam.json` si falta, ejecuta
-ingest -> checks -> score e imprime un JSON con `score` y `findings_count`.
+ingest -> checks -> score -> draft_report e imprime titulo del report,
+conteo de findings y JSON con `score` (assert score == 27 con
+`LLM_PROVIDER=off`).
 
 ## Secretos
 

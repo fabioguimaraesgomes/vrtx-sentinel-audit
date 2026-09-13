@@ -1,7 +1,8 @@
-"""Smoke local: ingest -> checks -> score sobre mocks/fixtures/sample_iam.json."""
+"""Smoke local: ingest -> checks -> score -> draft_report sobre mocks/fixtures/sample_iam.json."""
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -9,9 +10,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# Smoke determinista: sin llamadas LLM.
+os.environ.setdefault("LLM_PROVIDER", "off")
+
 from services.checks_basic import run_checks
 from services.ingest import ingest_file
 from services.models import to_dict
+from services.report import draft_report
 from services.score import score_findings
 
 FIXTURE = ROOT / "mocks" / "fixtures" / "sample_iam.json"
@@ -65,6 +70,17 @@ def main() -> int:
     evidences = ingest_file(path)
     findings = run_checks(evidences)
     score = score_findings(findings)
+    report = draft_report(findings, score, lang="es", client_id="smoke-local")
+
+    # Contrato del fixture sample_iam: score ponderado = 27 (LLM off).
+    expected_score = 27.0
+    if score.total != expected_score:
+        raise AssertionError(
+            f"score.total esperado {expected_score}, obtenido {score.total}"
+        )
+
+    print(f"report_title: {report.title}")
+    print(f"report_findings: {len(report.findings)}")
     summary = {
         "ok": True,
         "mvp": "file-ingest",
@@ -72,6 +88,13 @@ def main() -> int:
         "evidences": len(evidences),
         "findings_count": len(findings),
         "score": to_dict(score),
+        "report": {
+            "title": report.title,
+            "findings_count": len(report.findings),
+            "lang": report.lang,
+            "summary": report.summary,
+            "remediations": len(report.remediations),
+        },
         "findings": [to_dict(item) for item in findings],
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2))

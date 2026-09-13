@@ -51,6 +51,10 @@ class ReportDict(TypedDict, total=False):
     score: ScoreDict
     findings: list[FindingDict]
     summary: str
+    title: str
+    client_id: str | None
+    lang: str
+    remediations: list[dict[str, Any]]
 
 
 class AlertDict(TypedDict, total=False):
@@ -108,6 +112,10 @@ class Report:
     score: Score
     findings: list[Finding] = field(default_factory=list)
     summary: str = ""
+    title: str = ""
+    client_id: str | None = None
+    lang: str = "es"
+    remediations: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass

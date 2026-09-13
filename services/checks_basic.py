@@ -43,6 +43,7 @@ def run_checks(evidences: list[Evidence]) -> list[Finding]:
         findings.extend(_check_public_buckets(evidence))
         findings.extend(_check_iam_roles(evidence))
         findings.extend(_check_external_ips(evidence))
+        findings.extend(_check_failed_auth_burst(evidence))
 
     security = [item for item in findings if item.severity != "info"]
     if not security:
@@ -217,6 +218,153 @@ def _check_external_ips(evidence: Evidence) -> list[Finding]:
                 )
             )
     return findings
+
+
+
+def _check_failed_auth_burst(evidence: Evidence) -> list[Finding]:
+    """Si el payload parece logs de auth y failed_auth >= 3 -> finding."""
+    if not _looks_like_auth_logs(evidence):
+        return []
+
+    count = _failed_auth_count(evidence.payload)
+    if count < 3:
+        return []
+
+    severity = "high" if count >= 5 else "medium"
+    return [
+        Finding(
+            finding_id=_finding_id(
+                "VRTX-AUTH-FAILED-BURST", evidence.source, str(count)
+            ),
+            severity=severity,
+            title="Rafaga de autenticaciones fallidas",
+            description=(
+                f"Se detectaron {count} intentos de autenticacion fallidos "
+                "en evidencia de tipo auth/logs. Posible fuerza bruta o "
+                "credenciales comprometidas."
+            ),
+            evidence_source=evidence.source,
+            rule_id="VRTX-AUTH-FAILED-BURST",
+            metadata={
+                "kind": evidence.kind,
+                "failed_auth": count,
+                "threshold": 3,
+            },
+        )
+    ]
+
+
+def _looks_like_auth_logs(evidence: Evidence) -> bool:
+    kind = (evidence.kind or "").strip().lower()
+    if any(token in kind for token in ("auth", "login", "signin", "identity")):
+        return True
+
+    payload = evidence.payload if isinstance(evidence.payload, dict) else {}
+    keys = {str(k).lower() for k in payload.keys()}
+    auth_keys = {
+        "failed_auth",
+        "failed_logins",
+        "auth_failures",
+        "login_failures",
+        "failed_attempts",
+        "authentication_failures",
+        "auth_events",
+        "login_events",
+        "sign_in_logs",
+        "signin_logs",
+    }
+    if keys & auth_keys:
+        return True
+
+    for candidate_key in ("events", "logs", "records", "entries", "items"):
+        rows = payload.get(candidate_key)
+        if isinstance(rows, list) and rows:
+            sample = rows[0] if isinstance(rows[0], dict) else {}
+            sample_l = {str(k).lower(): v for k, v in sample.items()} if sample else {}
+            if any(
+                k in sample_l
+                for k in (
+                    "auth_result",
+                    "login_result",
+                    "status",
+                    "event_type",
+                    "result",
+                )
+            ):
+                blob = " ".join(str(v).lower() for v in sample_l.values())
+                if any(
+                    marker in blob
+                    for marker in ("fail", "denied", "invalid", "auth", "login")
+                ):
+                    return True
+    return False
+
+
+def _failed_auth_count(payload: dict[str, Any]) -> int:
+    if not isinstance(payload, dict):
+        return 0
+
+    for key in (
+        "failed_auth",
+        "failed_logins",
+        "auth_failures",
+        "login_failures",
+        "failed_attempts",
+        "authentication_failures",
+    ):
+        if key in payload:
+            try:
+                return int(payload[key])
+            except (TypeError, ValueError):
+                pass
+
+    total = 0
+    for candidate_key in ("events", "logs", "records", "entries", "items"):
+        rows = payload.get(candidate_key)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if _row_is_failed_auth(row):
+                total += 1
+    return total
+
+
+def _row_is_failed_auth(row: Any) -> bool:
+    if isinstance(row, str):
+        text = row.lower()
+        return any(
+            marker in text
+            for marker in (
+                "failed_auth",
+                "auth failed",
+                "login failed",
+                "authentication failed",
+                "invalid credentials",
+            )
+        )
+    if not isinstance(row, dict):
+        return False
+
+    lowered = {str(k).lower(): v for k, v in row.items()}
+    for key in ("failed_auth", "auth_failed", "login_failed"):
+        val = lowered.get(key)
+        if val in (True, 1, "1", "true", "True", "yes"):
+            return True
+
+    for key in ("result", "status", "auth_result", "login_result", "outcome"):
+        val = str(lowered.get(key, "")).lower()
+        if val in {"fail", "failed", "failure", "denied", "error", "invalid"}:
+            return True
+
+    event_type = str(lowered.get("event_type", lowered.get("type", ""))).lower()
+    if any(
+        marker in event_type
+        for marker in ("login_failed", "auth_failed", "signin_failed")
+    ):
+        return True
+
+    blob = " ".join(str(v).lower() for v in lowered.values())
+    return "authentication failed" in blob or "login failed" in blob
 
 
 # RFC1918 / loopback / link-local / CGNAT. No usar is_private:
