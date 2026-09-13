@@ -6,3 +6,6 @@ local.settings.json
 *.pyc
 *.pyo
 .vscode/
+
+.azurite/
+
