@@ -1,0 +1,27 @@
+{
+  "kind": "auth",
+  "source": "signin-logs",
+  "failed_auth": 5,
+  "events": [
+    {
+      "status": "failed",
+      "user": "a@ex.com"
+    },
+    {
+      "status": "failed",
+      "user": "b@ex.com"
+    },
+    {
+      "status": "failed",
+      "user": "c@ex.com"
+    },
+    {
+      "status": "failed",
+      "user": "d@ex.com"
+    },
+    {
+      "status": "failed",
+      "user": "e@ex.com"
+    }
+  ]
+}

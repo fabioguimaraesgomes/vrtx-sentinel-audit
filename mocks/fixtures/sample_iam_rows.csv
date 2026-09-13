@@ -1,0 +1,4 @@
+kind,role,members,bucket,public,acl,external_ip
+iam,roles/owner,user:admin@example.com,,,,
+storage,,,vrtx-public-assets,true,allUsers,
+vpc,,,,,,203.0.113.10

@@ -14,11 +14,12 @@ WEIGHTS: dict[str, float] = {
 }
 
 
-def score_findings(findings: list[Finding]) -> Score:
+def score_findings(findings: list[Finding] | None) -> Score:
     """Suma pesos por severidad y asigna un grado A-F (A = sin riesgo)."""
+    safe = [f for f in (findings or []) if f is not None]
     counts: Counter[str] = Counter()
     total = 0.0
-    for finding in findings:
+    for finding in safe:
         severity = (finding.severity or "info").strip().lower()
         if severity not in WEIGHTS:
             severity = "info"
@@ -29,7 +30,7 @@ def score_findings(findings: list[Finding]) -> Score:
     return Score(
         total=total,
         grade=_grade(total),
-        findings_count=len(findings),
+        findings_count=len(safe),
         by_severity=by_severity,
         weights=dict(WEIGHTS),
     )

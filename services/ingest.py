@@ -14,7 +14,11 @@ _COLLECTION_KEYS = ("items", "records", "data", "evidences", "rows")
 
 
 def ingest_file(path: str | Path) -> list[Evidence]:
-    """Lee un .json (objeto o lista) o .csv y normaliza a Evidence."""
+    """Lee un .json (objeto o lista) o .csv y normaliza a Evidence.
+
+    Errores de formato/encoding se elevan como ValueError con mensaje claro
+    (sin traceback crudo de json/codecs). FileNotFoundError si no existe.
+    """
     file_path = Path(path)
     if not file_path.is_file():
         raise FileNotFoundError(f"No existe el fichero: {file_path}")
@@ -36,8 +40,25 @@ def ingest_file(path: str | Path) -> list[Evidence]:
     return [_normalize(item, source, ingested_at, file_path) for item in items]
 
 
+def _read_text(file_path: Path) -> str:
+    try:
+        return file_path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise ValueError(
+            f"Encoding no valido (se espera UTF-8) en {file_path}: {exc}"
+        ) from None
+
+
 def _load_json_items(file_path: Path) -> list[Any]:
-    raw = json.loads(file_path.read_text(encoding="utf-8-sig"))
+    text = _read_text(file_path)
+    try:
+        raw = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"JSON malformado en {file_path}: {exc.msg} "
+            f"(linea {exc.lineno}, columna {exc.colno})"
+        ) from None
+
     if isinstance(raw, list):
         return raw
     if isinstance(raw, dict):
@@ -50,10 +71,14 @@ def _load_json_items(file_path: Path) -> list[Any]:
 
 
 def _load_csv_items(file_path: Path) -> list[dict[str, Any]]:
+    text = _read_text(file_path)
+    # CSV vacio o solo whitespace -> sin evidencias (alineado con JSON []).
+    if not text.strip():
+        return []
     with file_path.open(encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         rows = [dict(row) for row in reader]
-    return rows if rows else [{}]
+    return rows
 
 
 def _infer_kind(payload: dict[str, Any], file_path: Path) -> str:
@@ -68,6 +93,8 @@ def _infer_kind(payload: dict[str, Any], file_path: Path) -> str:
         return "storage"
     if any(token in name for token in ("vpc", "flow", "network")):
         return "vpc"
+    if any(token in name for token in ("auth", "login", "signin")):
+        return "auth"
 
     keys = {str(key).lower() for key in payload}
     if keys & {"role", "roles", "bindings", "members"}:
@@ -76,6 +103,13 @@ def _infer_kind(payload: dict[str, Any], file_path: Path) -> str:
         return "storage"
     if keys & {"external_ip", "public_ip", "source_ip", "dest_ip"}:
         return "vpc"
+    if keys & {
+        "failed_auth",
+        "failed_logins",
+        "auth_failures",
+        "login_failures",
+    }:
+        return "auth"
     return "generic"
 
 
@@ -87,6 +121,8 @@ def _normalize(
 ) -> Evidence:
     if isinstance(item, dict):
         payload = dict(item)
+    elif item is None:
+        payload = {}
     else:
         payload = {"value": item}
     kind = _infer_kind(payload, file_path)

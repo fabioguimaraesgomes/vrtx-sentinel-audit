@@ -1,0 +1,14 @@
+{
+  "kind": "auth",
+  "failed_auth": 2,
+  "events": [
+    {
+      "status": "failed",
+      "user": "a@ex.com"
+    },
+    {
+      "status": "ok",
+      "user": "b@ex.com"
+    }
+  ]
+}

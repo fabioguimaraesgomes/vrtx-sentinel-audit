@@ -36,10 +36,15 @@ IP_KEY_HINTS = (
 IPV4_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
 
-def run_checks(evidences: list[Evidence]) -> list[Finding]:
+def run_checks(evidences: list[Evidence] | None) -> list[Finding]:
     """Heuristicas deterministas; si no hay senales, Finding informativo."""
     findings: list[Finding] = []
-    for evidence in evidences:
+    for evidence in evidences or []:
+        if evidence is None:
+            continue
+        # None-safety: payload debe ser dict para los checkers.
+        if not isinstance(getattr(evidence, "payload", None), dict):
+            evidence.payload = {}
         findings.extend(_check_public_buckets(evidence))
         findings.extend(_check_iam_roles(evidence))
         findings.extend(_check_external_ips(evidence))
@@ -70,7 +75,7 @@ def run_checks(evidences: list[Evidence]) -> list[Finding]:
 
 
 def _check_public_buckets(evidence: Evidence) -> list[Finding]:
-    payload = evidence.payload
+    payload = evidence.payload if isinstance(evidence.payload, dict) else {}
     hits: list[str] = []
 
     public_flag = payload.get("public")
@@ -126,8 +131,9 @@ def _check_public_buckets(evidence: Evidence) -> list[Finding]:
 def _check_iam_roles(evidence: Evidence) -> list[Finding]:
     findings: list[Finding] = []
     seen: set[str] = set()
+    payload = evidence.payload if isinstance(evidence.payload, dict) else {}
 
-    for path, value in _walk(evidence.payload):
+    for path, value in _walk(payload):
         if not isinstance(value, str):
             continue
         role = value.strip()
@@ -185,8 +191,9 @@ def _check_iam_roles(evidence: Evidence) -> list[Finding]:
 def _check_external_ips(evidence: Evidence) -> list[Finding]:
     findings: list[Finding] = []
     seen: set[str] = set()
+    payload = evidence.payload if isinstance(evidence.payload, dict) else {}
 
-    for path, value in _walk(evidence.payload):
+    for path, value in _walk(payload):
         if not isinstance(value, str):
             continue
         leaf = path.rsplit(".", 1)[-1].lower()

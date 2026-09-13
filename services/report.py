@@ -91,20 +91,25 @@ def draft_report(
     if lang_key not in ("es", "en"):
         lang_key = "es"
 
+    safe_findings = [f for f in (findings or []) if f is not None]
+    if score is None:
+        from services.score import score_findings as _score_findings
+        score = _score_findings(safe_findings)
+
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     report_id = f"rpt-{uuid.uuid4().hex[:12]}"
     request_id = client_id or "local-mvp"
 
     title = _title(score, lang_key, client_id)
-    remediations = _remediations_for(findings, lang_key)
-    summary = _executive_summary(findings, score, remediations, lang_key)
+    remediations = _remediations_for(safe_findings, lang_key)
+    summary = _executive_summary(safe_findings, score, remediations, lang_key)
 
     report = Report(
         report_id=report_id,
         generated_at=now,
         request_id=request_id,
         score=score,
-        findings=list(findings),
+        findings=list(safe_findings),
         summary=summary,
         title=title,
         client_id=client_id,
@@ -126,21 +131,25 @@ def draft_report(
 
 def _title(score: Score, lang: str, client_id: str | None) -> str:
     client = client_id or ("local" if lang == "es" else "local")
+    grade = (score.grade if score and score.grade else "A")
+    total = float(score.total) if score and score.total is not None else 0.0
     if lang == "en":
         return (
-            f"VRTX Sentinel draft report - grade {score.grade} "
-            f"(score {score.total:g}) - {client}"
+            f"VRTX Sentinel draft report - grade {grade} "
+            f"(score {total:g}) - {client}"
         )
     return (
-        f"Borrador de informe VRTX Sentinel - grado {score.grade} "
-        f"(puntuacion {score.total:g}) - {client}"
+        f"Borrador de informe VRTX Sentinel - grado {grade} "
+        f"(puntuacion {total:g}) - {client}"
     )
 
 
-def _remediations_for(findings: list[Finding], lang: str) -> list[dict[str, Any]]:
+def _remediations_for(findings: list[Finding] | None, lang: str) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for finding in findings:
+    for finding in findings or []:
+        if finding is None:
+            continue
         code = finding.rule_id or "UNKNOWN"
         # Una remediacion por codigo + finding_id para trazabilidad.
         key = f"{code}|{finding.finding_id}"
@@ -161,19 +170,25 @@ def _remediations_for(findings: list[Finding], lang: str) -> list[dict[str, Any]
 
 
 def _executive_summary(
-    findings: list[Finding],
+    findings: list[Finding] | None,
     score: Score,
     remediations: list[dict[str, Any]],
     lang: str,
 ) -> str:
-    security = [f for f in findings if (f.severity or "").lower() != "info"]
-    by_sev = score.by_severity or {}
-    codes = sorted({f.rule_id for f in findings if f.rule_id})
+    safe = [f for f in (findings or []) if f is not None]
+    security = [f for f in safe if (f.severity or "").lower() != "info"]
+    by_sev = (score.by_severity if score else None) or {}
+    codes = sorted({f.rule_id for f in safe if f.rule_id})
+    grade = (score.grade if score and score.grade else "A")
+    total = float(score.total) if score and score.total is not None else 0.0
+    findings_count = (
+        score.findings_count if score and score.findings_count is not None else len(safe)
+    )
 
     if lang == "en":
         lines = [
-            f"Draft security report. Grade {score.grade}, weighted score {score.total:g}.",
-            f"Findings: {score.findings_count} total "
+            f"Draft security report. Grade {grade}, weighted score {total:g}.",
+            f"Findings: {findings_count} total "
             f"({len(security)} security-relevant).",
             (
                 "By severity - critical={c}, high={h}, medium={m}, low={l}, info={i}."
@@ -197,9 +212,9 @@ def _executive_summary(
         return " ".join(lines)
 
     lines = [
-        f"Borrador de informe de seguridad. Grado {score.grade}, "
-        f"puntuacion ponderada {score.total:g}.",
-        f"Hallazgos: {score.findings_count} en total "
+        f"Borrador de informe de seguridad. Grado {grade}, "
+        f"puntuacion ponderada {total:g}.",
+        f"Hallazgos: {findings_count} en total "
         f"({len(security)} con relevancia de seguridad).",
         (
             "Por severidad - critical={c}, high={h}, medium={m}, low={l}, info={i}."
